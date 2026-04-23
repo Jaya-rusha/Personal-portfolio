@@ -20,28 +20,90 @@
     <!-- EmailJS -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     
-    <!-- Simple contact form fallback -->
+    <!-- EmailJS Configuration -->
+    <script type="text/javascript">
+        (function() {
+            emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your EmailJS public key
+        })();
+    </script>
+    
+    <!-- Functional Contact Form with EmailJS -->
     <script>
-        // Fallback contact form using mailto
+        // Functional contact form using EmailJS
         function sendContactForm(e) {
             e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const submitText = document.getElementById('submit-text');
+            const submitLoader = document.getElementById('submit-loader');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitText.style.display = 'none';
+            submitLoader.style.display = 'block';
             
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const subject = document.getElementById('subject').value;
             const message = document.getElementById('message').value;
             
-            // Create mailto link
-            const mailtoLink = `mailto:jayarusha006@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`)}`;
+            // EmailJS parameters
+            const templateParams = {
+                from_name: name,
+                from_email: email,
+                subject: subject,
+                message: message,
+                to_email: 'jayarusha006@gmail.com'
+            };
             
-            // Open email client
-            window.location.href = mailtoLink;
+            // Send email using EmailJS
+            emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+                .then(function(response) {
+                    console.log('SUCCESS!', response.status, response.text);
+                    showNotification('Message sent successfully! I\'ll get back to you soon.', 'success');
+                    e.target.reset();
+                })
+                .catch(function(error) {
+                    console.log('FAILED...', error);
+                    showNotification('Failed to send message. Please try again or email directly.', 'error');
+                })
+                .finally(function() {
+                    // Reset loading state
+                    submitBtn.disabled = false;
+                    submitText.style.display = 'block';
+                    submitLoader.style.display = 'none';
+                });
+        }
+        
+        // Notification system
+        function showNotification(message, type) {
+            // Remove existing notification
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
             
-            // Show success message
-            alert('Opening your email client to send the message...');
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification fixed top-4 right-4 p-4 rounded-lg text-white z-50 transform transition-all duration-300 translate-x-full`;
+            notification.style.background = type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #ef4444, #dc2626)';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
             
-            // Reset form
-            e.target.reset();
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
         }
     </script>
     
@@ -707,109 +769,15 @@
                 </p>
             </div>
 
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-<!-- Sentiment Analysis System -->
-<div>
-    <div class="project-card glass rounded-xl overflow-hidden h-full relative">
-        
-        <div class="h-48 bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-            <i class="fas fa-brain text-white text-5xl"></i>
-        </div>
-
-        <div class="p-6">
-            <h3 class="text-xl font-semibold text-white mb-3">Sentiment Analysis System</h3>
-
-            <p class="text-gray-300 mb-4 text-sm leading-relaxed">
-                Complete NLP pipeline for sentiment classification with data preprocessing, 
-                REST API using FastAPI, and comprehensive model evaluation.
-            </p>
-
-            <div class="flex flex-wrap gap-2 mb-4">
-                <span class="tech-tag px-3 py-1 rounded-full text-xs text-blue-300">Python</span>
-                <span class="tech-tag px-3 py-1 rounded-full text-xs text-green-300">Scikit-learn</span>
-                <span class="tech-tag px-3 py-1 rounded-full text-xs text-purple-300">NLP</span>
-                <span class="tech-tag px-3 py-1 rounded-full text-xs text-yellow-300">FastAPI</span>
-            </div>
-
-            <div class="flex space-x-4">
-                <a 
-                    href="https://github.com/Jaya-rusha/Sentiment-Analysis"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onclick="event.stopPropagation();"
-                    class="relative z-10 text-blue-400 hover:text-blue-300 transition-colors pointer-events-auto"
-                >
-                    <i class="fab fa-github mr-1"></i> View Repo
-                </a>
-            </div>
-        </div>
-
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="projects-container">
+    <!-- Projects will be dynamically loaded here -->
+    <div class="col-span-full text-center py-12">
+        <div class="loader mx-auto mb-4"></div>
+        <p class="text-gray-400">Loading projects from GitHub...</p>
     </div>
 </div>
 
-<!-- CSE Department Website -->
-<div>
-    <div class="project-card glass rounded-xl overflow-hidden h-full relative">
-        <div class="h-48 bg-gradient-to-br from-green-600 to-blue-600 flex items-center justify-center">
-            <i class="fas fa-globe text-white text-5xl"></i>
-        </div>
-
-        <div class="p-6">
-            <h3 class="text-xl font-semibold text-white mb-3">CSE Department Website</h3>
-
-            <p class="text-gray-300 mb-4 text-sm leading-relaxed">
-                Full-stack web application with responsive React frontend, RESTful backend APIs, 
-                user authentication, and complete CRUD operations.
-            </p>
-
-            <div class="flex flex-wrap gap-2 mb-4">
-                <span class="tech-tag px-3 py-1 rounded-full text-xs text-cyan-300">React</span>
-                <span class="tech-tag px-3 py-1 rounded-full text-xs text-green-300">Node.js</span>
-                <span class="tech-tag px-3 py-1 rounded-full text-xs text-gray-300">Express.js</span>
-                <span class="tech-tag px-3 py-1 rounded-full text-xs text-green-600">MongoDB</span>
-            </div>
-
-            <div class="flex space-x-4">
-                <a 
-                    href="https://github.com/Jaya-rusha/CSE_Dept"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onclick="event.stopPropagation();"
-                    class="relative z-10 text-blue-400 hover:text-blue-300 transition-colors pointer-events-auto"
-                >
-                    <i class="fab fa-github mr-1"></i> View Repo
-                </a>
-            </div>
-        </div>
-    </div>
 </div>
-                <!-- Login Attempt Tracker -->
-                <div>
-                    <div class="project-card glass rounded-xl overflow-hidden h-full">
-                        <div class="h-48 bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                            <i class="fas fa-shield-alt text-white text-5xl"></i>
-                        </div>
-                        <div class="p-6">
-                            <h3 class="text-xl font-semibold text-white mb-3">Login Attempt Tracker</h3>
-                            <p class="text-gray-300 mb-4 text-sm leading-relaxed">
-                                Database-driven system to track login attempts with SQL queries, 
-                                data visualization, and comprehensive security monitoring.
-                            </p>
-                            <div class="flex flex-wrap gap-2 mb-4">
-                                <span class="tech-tag px-3 py-1 rounded-full text-xs text-blue-300">SQL</span>
-                                <span class="tech-tag px-3 py-1 rounded-full text-xs text-purple-300">DBMS</span>
-                                <span class="tech-tag px-3 py-1 rounded-full text-xs text-green-300">Web Dev</span>
-                            </div>
-                            <div class="flex space-x-4">
-                                <a href="https://github.com/Jaya-rusha" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 transition-colors">
-                                    <i class="fab fa-github mr-1"></i> View Repo
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </section>
 
     
@@ -1146,6 +1114,118 @@
         });
 
         // Contact form is handled by sendContactForm function
+
+        // Load Specific Projects
+        function loadSpecificProjects() {
+            const projectsContainer = document.getElementById('projects-container');
+            
+            // Clear loading state
+            projectsContainer.innerHTML = '';
+            
+            // Define your specific projects
+            const projects = [
+                {
+                    name: 'Sentiment Analysis System',
+                    description: 'Complete NLP pipeline for sentiment classification with data preprocessing, REST API using FastAPI, and comprehensive model evaluation.',
+                    gradient: 'from-blue-600 to-purple-600',
+                    icon: 'fas fa-brain',
+                    languages: ['Python', 'Scikit-learn', 'NLP', 'FastAPI'],
+                    githubUrl: 'https://github.com/Jaya-rusha/Sentiment-Analysis',
+                    demoUrl: ''
+                },
+                {
+                    name: 'CSE Department Website',
+                    description: 'Full-stack web application with responsive React frontend, RESTful backend APIs, user authentication, and complete CRUD operations.',
+                    gradient: 'from-green-600 to-blue-600',
+                    icon: 'fas fa-globe',
+                    languages: ['React', 'Node.js', 'Express.js', 'MongoDB'],
+                    githubUrl: 'https://github.com/Jaya-rusha/CSE_Dept',
+                    demoUrl: ''
+                },
+                {
+                    name: 'Login Attempt Tracker',
+                    description: 'Database-driven system to track login attempts with SQL queries, data visualization, and comprehensive security monitoring.',
+                    gradient: 'from-purple-600 to-pink-600',
+                    icon: 'fas fa-shield-alt',
+                    languages: ['SQL', 'DBMS', 'Web Dev'],
+                    githubUrl: 'https://github.com/Jaya-rusha/Login-Tracker',
+                    demoUrl: ''
+                }
+            ];
+            
+            projects.forEach((project, index) => {
+                const projectCard = createProjectCard(project, index);
+                projectsContainer.appendChild(projectCard);
+            });
+        }
+        
+        function createProjectCard(project, index) {
+            // Create project card element
+            const projectCard = document.createElement('div');
+            projectCard.innerHTML = `
+                <div class="project-card glass rounded-xl overflow-hidden h-full relative" style="animation: fadeIn 0.6s ease-out ${index * 0.1}s both;">
+                    <div class="h-48 bg-gradient-to-br ${project.gradient} flex items-center justify-center">
+                        <i class="${project.icon} text-white text-5xl"></i>
+                    </div>
+                    
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-white mb-3">${project.name}</h3>
+                        
+                        <p class="text-gray-300 mb-4 text-sm leading-relaxed">
+                            ${project.description}
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${project.languages.map((lang, langIndex) => {
+                                const langColors = {
+                                    'Python': 'text-blue-300',
+                                    'Scikit-learn': 'text-green-300',
+                                    'NLP': 'text-purple-300',
+                                    'FastAPI': 'text-yellow-300',
+                                    'React': 'text-cyan-300',
+                                    'Node.js': 'text-green-300',
+                                    'Express.js': 'text-gray-300',
+                                    'MongoDB': 'text-green-600',
+                                    'SQL': 'text-blue-300',
+                                    'DBMS': 'text-purple-300',
+                                    'Web Dev': 'text-green-300'
+                                };
+                                const color = langColors[lang] || 'text-gray-300';
+                                return `<span class="tech-tag px-3 py-1 rounded-full text-xs ${color}">${lang}</span>`;
+                            }).join('')}
+                        </div>
+                        
+                        <div class="flex space-x-4">
+                            <a 
+                                href="${project.githubUrl}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onclick="event.stopPropagation();"
+                                class="relative z-10 text-blue-400 hover:text-blue-300 transition-colors pointer-events-auto"
+                            >
+                                <i class="fab fa-github mr-1"></i> View Repository
+                            </a>
+                            ${project.demoUrl ? `
+                                <a 
+                                    href="${project.demoUrl}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onclick="event.stopPropagation();"
+                                    class="relative z-10 text-green-400 hover:text-green-300 transition-colors pointer-events-auto"
+                                >
+                                    <i class="fas fa-external-link-alt mr-1"></i> Live Demo
+                                </a>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return projectCard;
+        }
+
+        // Load projects when page loads
+        document.addEventListener('DOMContentLoaded', loadSpecificProjects);
 
         // Add parallax effect to floating shapes
         window.addEventListener('scroll', () => {
